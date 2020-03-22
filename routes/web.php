@@ -17,6 +17,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/{id}', function($id) {
-    return "This is the id: " . $id;
-});
+// Route::get('/{id}', function($id) {
+//     return "This is the id: " . $id;
+// });
+
+// Route::get('/post/{data}', 'PostController@index');
