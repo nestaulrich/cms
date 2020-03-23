@@ -22,3 +22,6 @@ Route::get('/', function () {
 // });
 
 // Route::get('/post/{data}', 'PostController@index');
+Route::resource('posts', 'PostController');
+
+Route::get('/contact', 'PostController@contact');
