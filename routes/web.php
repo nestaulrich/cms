@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Post;
+use App\User;
+use App\Role;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -20,13 +22,13 @@ Route::get('/', function () {
 // ****************************************************************************
 // Raw SQL query format
 // ****************************************************************************
-Route::get('/read', function() {
-    $results = DB::select('SELECT * FROM posts ');
-    return var_dump($results);
-    // foreach($results as $result) {
-    //     return $result->title;
-    // }
-});
+// Route::get('/read', function() {
+//     $results = DB::select('SELECT * FROM posts ');
+//     return var_dump($results);
+//     // foreach($results as $result) {
+//     //     return $result->title;
+//     // }
+// });
 
 
 // // Get info from database
@@ -78,32 +80,167 @@ Route::get('/read', function() {
 // Eloquent 
 // ****************************************************************************
 
-// Route::get('/read', function() {
-// // Pulls all the methods from Posts controller
-//     $posts = Post::all();
-//     // $collection = [];
-//     // foreach($posts as $post) {
-//     //     array_push($post->title, $collection);
-//     // }
-//     // $count = count($collection);
+Route::get('/create', function() {
+    $post = new Post;
+    $post->title = "I created a title";
+    $post->body = "I created some body content";
 
-//     return $posts;
+    $post->save();
 
-// });
+});
 
-// Route::get('/find', function() {
+Route::get('/read', function() {
 
-//     $posts = Post::find(2);
+    $posts = Post::all();
+    $titles = '';
+    foreach($posts as $post) {
+        $titles = $titles .$post->title . '<br>';
+    }
+    return $titles;
 
-//     return $posts->body;
-// });
+});
 
-// Route::get('/findwhere', function() {
-//     $posts = Post::where('id', 2)->get();
-//     return $posts;
-// });
+Route::get('/find', function() {
+    //find() returns an object
+    $post = Post::find(1);
+    return $post->title;
 
-// Route::get('/findmore', function() {
-//     $posts = Post::findorfail(5);
-//     return $posts->title;
-// });
+});
+
+Route::get('/findwhere', function() {
+    //get() returns a collection. To access a title you need to iterate
+    $post = Post::where('id', 2)->get();
+
+    foreach($post as $item) {
+        return $item->body;
+    }
+
+});
+
+Route::get('/findmore', function() {
+    $post = Post::findOrFail(5);
+    return $post;
+});
+
+Route::get('/basicinsert', function() {
+    //Instantiate the Posts model
+    $post = new Post;
+    $post->title = "Basic insert title";
+    $post->body = "New basic insert body content.";
+
+    $post->save();
+});
+
+// Create data
+Route::get('/createdata', function() {
+
+    Post::create(['title'=>'the create method', 'body'=>'the create method body']);
+
+});
+
+Route::get('/basicupdate', function() {
+$post = Post::find(2);
+$post->title = "Updated title for post 2";
+$post->save();
+});
+
+// Use the update method
+Route::get('/update', function() {
+
+    Post::where('id', 1)->where('is_admin', 0)->update(['title'=>'This new title', 'body'=>'This body and title were updated by the update method']);
+
+});
+
+//Delete stuff
+Route::get('/delete', function() {
+
+    $post = Post::find(1)->delete();
+
+});
+
+Route::get('/anotherdelete', function() {
+    //Seems like it only works with an array
+    Post::destroy([2,3]);
+});
+
+//Soft Deleting
+Route::get('/softdelete', function() {
+    Post::find(5)->delete();
+});
+
+
+//Read sofdeleted entries
+Route::get('/readsoftdelete', function() {
+    // Wont work because 4 is deleted
+    // return $post = Post::find(4);
+
+    //Will return something that has been soft deleted
+    // return Post::withTrashed()->where('id', 4)->get();
+
+    return Post::onlyTrashed()->get();
+});
+
+// Restoring soft deleted entries
+
+Route::get('/restore', function() {
+
+    Post::onlyTrashed()->restore();
+
+});
+
+Route::get('forcedelete', function() {
+    Post::find(4)->forceDelete();
+});
+
+// ***************************************
+// ***  Eloquent Relationships   *********
+// ***************************************
+
+//************ One to One relationship
+//One user
+Route::get('/user/{id}/post', function($id) {
+    //chained to get the titles of the post of the User
+    return User::find($id)->post->title;
+});
+
+//Return the user that the post belongs to
+Route::get('/post/{id}/user', function($id) {
+
+    return Post::find($id)->user->name;
+});
+
+// ************* One to many
+Route::get('/posts', function() {
+    $user = User::find(1);
+    $collection = '';
+    foreach($user->posts as $post) {
+        $collection = $collection . $post->title . '<br>';
+    }
+    return $collection;
+});
+
+// ************* Pivot table (lookup table)
+// Many to Many
+Route::get('/userroles/{user}', function($user) {
+    //returns a collection
+    $role = User::find($user)->roles;
+    // return gettype($role);
+    //When returning a collection you can use an index to get properties of the object
+    return $role[0]->name;
+});
+
+Route::get('/rolesusers/{role_id}', function($role_id) {
+
+    $users =  Role::find($role_id)->users;
+    return $users[0];
+});
+
+//Accessing the pivot table (lookup table)
+Route::get('/user/pivot', function() {
+    $user = User::find(1);
+
+    foreach($user->roles as $role) {
+        echo $role->pivot->created_at;
+    }
+
+});
