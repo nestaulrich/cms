@@ -1,9 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+// These are the Models we're using here
 use App\Post;
 use App\User;
 use App\Role;
+use App\Country;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -243,4 +245,20 @@ Route::get('/user/pivot', function() {
         echo $role->pivot->created_at;
     }
 
+});
+
+//************ hasMany through relationship
+
+// Here we want to get blog titles from users from a certain country.
+//We use the country model and give 2 as Param (Mexico)
+Route::get('/user/country', function() {
+    $country = Country::find(2);
+    echo $country . "<br>";
+    echo $country->posts . "<br>";
+//posts table id(primary key) 2 in posts belongs to user_id 3, 
+//users table id 3 == Denise from country_id 2(Mexico)
+// Mexico is id (primary key) 2 in the countries table so it outputs Buenos Dias
+    foreach($country->posts as $post) {
+        echo $post->title;
+    }
 });
