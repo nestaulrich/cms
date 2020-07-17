@@ -24,6 +24,12 @@
                 height: 100vh;
             }
 
+            .lessons {
+                background-color: beige;
+                margin-top: 3em;
+                
+            }
+
             .flex-center {
                 align-items: center;
                 display: flex;
@@ -64,7 +70,7 @@
         </style>
     </head>
     <body>
-        <div class="flex-center position-ref full-height">
+        <!-- <div class="flex-center position-ref full-height">
             @if (Route::has('login'))
                 <div class="top-right links">
                     @auth
@@ -95,6 +101,15 @@
                     <a href="https://github.com/laravel/laravel">GitHub</a>
                 </div>
             </div>
+        </div> -->
+
+
+        <div class="flex-center full height">
+        <div class="row">
+            <div class="col-8 offset-2 lessons">
+                <a href="/create">Create</a>
+            </div>
+        </div>
         </div>
     </body>
 </html>
