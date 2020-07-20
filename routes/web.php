@@ -102,163 +102,109 @@ Route::get('/read', function() {
 
 });
 
-Route::get('/find', function() {
-    //find() returns an object
-    $post = Post::find(1);
-    return $post->title;
+// Route::get('/find', function() {
+//     //find() returns an object
+//     $post = Post::find(1);
+//     return $post->title;
 
-});
+// });
 
-Route::get('/findwhere', function() {
-    //get() returns a collection. To access a title you need to iterate
-    $post = Post::where('id', 2)->get();
+// Route::get('/findwhere', function() {
+//     //get() returns a collection. To access a title you need to iterate
+//     $post = Post::where('id', 2)->get();
 
-    foreach($post as $item) {
-        return $item->body;
-    }
+//     foreach($post as $item) {
+//         return $item->body;
+//     }
 
-});
+// });
 
-Route::get('/findmore', function() {
-    $post = Post::findOrFail(5);
-    return $post;
-});
+// Route::get('/findmore', function() {
+//     $post = Post::findOrFail(5);
+//     return $post;
+// });
 
-Route::get('/basicinsert', function() {
-    //Instantiate the Posts model
-    $post = new Post;
-    $post->title = "Basic insert title";
-    $post->body = "New basic insert body content.";
+// Route::get('/basicinsert', function() {
+//     //Instantiate the Posts model
+//     $post = new Post;
+//     $post->title = "Basic insert title";
+//     $post->body = "New basic insert body content.";
 
-    $post->save();
-});
+//     $post->save();
+// });
 
-// Create data
-Route::get('/createdata', function() {
+// // Create data
+// Route::get('/createdata', function() {
 
-    Post::create(['title'=>'the create method', 'body'=>'the create method body']);
+//     Post::create(['title'=>'the create method', 'body'=>'the create method body']);
 
-});
+// });
 
-Route::get('/basicupdate', function() {
-$post = Post::find(2);
-$post->title = "Updated title for post 2";
-$post->save();
-});
+// Route::get('/basicupdate', function() {
+// $post = Post::find(2);
+// $post->title = "Updated title for post 2";
+// $post->save();
+// });
 
-// Use the update method
-Route::get('/update', function() {
+// // Use the update method
+// Route::get('/update', function() {
 
-    Post::where('id', 1)->where('is_admin', 0)->update(['title'=>'This new title', 'body'=>'This body and title were updated by the update method']);
+//     Post::where('id', 1)->where('is_admin', 0)->update(['title'=>'This new title', 'body'=>'This body and title were updated by the update method']);
 
-});
+// });
 
-//Delete stuff
-Route::get('/delete', function() {
+// //Delete stuff
+// Route::get('/delete', function() {
 
-    $post = Post::find(1)->delete();
+//     $post = Post::find(1)->delete();
 
-});
+// });
 
-Route::get('/anotherdelete', function() {
-    //Seems like it only works with an array
-    Post::destroy([2,3]);
-});
+// Route::get('/anotherdelete', function() {
+//     //Seems like it only works with an array
+//     Post::destroy([2,3]);
+// });
 
-//Soft Deleting
-Route::get('/softdelete', function() {
-    Post::find(5)->delete();
-});
+// //Soft Deleting
+// Route::get('/softdelete', function() {
+//     Post::find(5)->delete();
+// });
 
 
-//Read sofdeleted entries
-Route::get('/readsoftdelete', function() {
-    // Wont work because 4 is deleted
-    // return $post = Post::find(4);
+// //Read sofdeleted entries
+// Route::get('/readsoftdelete', function() {
+//     // Wont work because 4 is deleted
+//     // return $post = Post::find(4);
 
-    //Will return something that has been soft deleted
-    // return Post::withTrashed()->where('id', 4)->get();
+//     //Will return something that has been soft deleted
+//     // return Post::withTrashed()->where('id', 4)->get();
 
-    return Post::onlyTrashed()->get();
-});
+//     return Post::onlyTrashed()->get();
+// });
 
-// Restoring soft deleted entries
+// // Restoring soft deleted entries
 
-Route::get('/restore', function() {
+// Route::get('/restore', function() {
 
-    Post::onlyTrashed()->restore();
+//     Post::onlyTrashed()->restore();
 
-});
+// });
 
-Route::get('forcedelete', function() {
-    Post::find(4)->forceDelete();
-});
+// Route::get('forcedelete', function() {
+//     Post::find(4)->forceDelete();
+// });
 
 // ***************************************
 // ***  Eloquent Relationships   *********
 // ***************************************
 
-//************ One to One relationship
-//One user
-Route::get('/user/{id}/post', function($id) {
-    //chained to get the titles of the post of the User
-    return User::find($id)->post->title;
+// Has 1; 1 to 1 relationships
+Route::get('user/{id}/post', function($id) {
+    return User::find($id)->post;
 });
 
-//Return the user that the post belongs to
-Route::get('/post/{id}/user', function($id) {
 
-    return Post::find($id)->user->name;
-});
+Route::get('post/{id}/user', function($id){
+return Post::find($id)->user->name;
 
-// ************* One to many
-Route::get('/posts', function() {
-    $user = User::find(1);
-    $collection = '';
-    foreach($user->posts as $post) {
-        $collection = $collection . $post->title . '<br>';
-    }
-    return $collection;
-});
-
-// ************* Pivot table (lookup table)
-// Many to Many
-Route::get('/userroles/{user}', function($user) {
-    //returns a collection
-    $role = User::find($user)->roles;
-    // return gettype($role);
-    //When returning a collection you can use an index to get properties of the object
-    return $role[0]->name;
-});
-
-Route::get('/rolesusers/{role_id}', function($role_id) {
-
-    $users =  Role::find($role_id)->users;
-    return $users[0];
-});
-
-//Accessing the pivot table (lookup table)
-Route::get('/user/pivot', function() {
-    $user = User::find(1);
-
-    foreach($user->roles as $role) {
-        echo $role->pivot->created_at;
-    }
-
-});
-
-//************ hasMany through relationship
-
-// Here we want to get blog titles from users from a certain country.
-//We use the country model and give 2 as Param (Mexico)
-Route::get('/user/country', function() {
-    $country = Country::find(2);
-    echo $country . "<br>";
-    echo $country->posts . "<br>";
-//posts table id(primary key) 2 in posts belongs to user_id 3, 
-//users table id 3 == Denise from country_id 2(Mexico)
-// Mexico is id (primary key) 2 in the countries table so it outputs Buenos Dias
-    foreach($country->posts as $post) {
-        echo $post->title;
-    }
 });
